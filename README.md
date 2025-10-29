@@ -1,4 +1,4 @@
-# Infobel APIs Demo
+# Infobel API Demos
 
 This project provides demonstration scripts for using the Infobel BizSearch and GetData APIs.
 

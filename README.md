@@ -15,7 +15,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/techinfobel/api-demos.git
+    git clone https://github.com/techinfobel/infobel_api_demos.git
     cd infobel_api_demos
     ```
 

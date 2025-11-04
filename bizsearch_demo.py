@@ -22,17 +22,17 @@ def _split_csv(value: str) -> List[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-def _build_search_payload() -> Dict[str, Any]:
+def _build_search_payload(company_name: str) -> Dict[str, Any]:
     """Create the body for the POST /api/search request."""
 
     search_payload: Dict[str, Any] = {
         # https://bizsearch.infobelpro.com/Help/Model/SearchInput
         "dataType": 1, 
-        "pageSize": 5, 
+        "pageSize": 3, 
         "displayLanguage": "EN",
         "returnFirstPage": 'true',
         "SortingOrder": [5], # https://bizsearch.infobelpro.com/Help/Model/SortingOrder
-        "BusinessName": "Nvidia",
+        "BusinessName": company_name,
         "CountryCodes": ["US"]
     }
 
@@ -82,9 +82,13 @@ def _format_contact_fields(record: Dict[str, Any]) -> Iterable[str]:
         yield f"Email: {email}"
 
 
-def _run_search(access_token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Execute the POST /api/search call and return the parsed JSON."""
+def search_and_get_first_page(access_token: str, company_name: str) -> Dict[str, Any]:
+    """Execute the initial search and return the first page of results.
     
+    This is the first method, which gets the searchId and the first page of records.
+    """
+    
+    payload = _build_search_payload(company_name)
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json",
@@ -97,6 +101,30 @@ def _run_search(access_token: str, payload: Dict[str, Any]) -> Dict[str, Any]:
     except requests.HTTPError as exc:  # pragma: no cover - passthrough for visibility
         raise BizSearchApiError(
             f"BizSearch search failed: {exc} | Response: {response.text}"
+        ) from exc
+
+    return response.json()
+
+
+def get_search_page(access_token: str, search_id: int, page: int) -> Dict[str, Any]:
+    """Fetch a specific page of results for a given searchId.
+    
+    This is the second method, which gets a subsequent page for a given searchId.
+    """
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+    
+    url = f"{SEARCH_URL}/{search_id}/records/{page}"
+
+    response = requests.get(url, headers=headers)
+
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:  # pragma: no cover - passthrough for visibility
+        raise BizSearchApiError(
+            f"BizSearch get records failed: {exc} | Response: {response.text}"
         ) from exc
 
     return response.json()
@@ -143,21 +171,44 @@ def main() -> int:
         return 1
 
     access_token = token_response["access_token"]
+    company_name_to_search = "Nvidia"
 
-    payload = _build_search_payload()
-
+    # --- Method 1: Initial search to get searchId and first page ---
+    print(f"--- Searching for '{company_name_to_search}' and fetching first page ---")
     try:
-        search_response = _run_search(access_token, payload)
+        initial_response = search_and_get_first_page(access_token, company_name_to_search)
     except BizSearchApiError as exc:
         print(str(exc))
         return 1
 
-    records = search_response.get("firstPageRecords") or []
-    if not records:
+    search_id = initial_response.get("searchId")
+    first_page_records = initial_response.get("firstPageRecords") or []
+
+    if not first_page_records:
         print("No records returned in the first page.")
         return 0
+    
+    _print_results(first_page_records)
 
-    _print_results(records[:5])
+    if not search_id:
+        print("No searchId returned, cannot fetch subsequent pages.")
+        return 0
+
+    # --- Method 2: Fetch subsequent pages using searchId ---
+    for page in range(2, 4):
+        print(f"--- Fetching page {page} for search ID {search_id} ---")
+        try:
+            paged_response = get_search_page(access_token, search_id, page)
+        except BizSearchApiError as exc:
+            print(str(exc))
+            continue
+
+        records = paged_response.get("records") or []
+        if not records:
+            print(f"No records returned on page {page}.")
+            break
+
+        _print_results(records)
 
     return 0
 

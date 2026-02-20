@@ -71,6 +71,26 @@ python getdata_demo.py
 
 The output will include the company name, address, contact details, activity, and a link to the company's location on OpenStreetMap.
 
+## Testing
+
+The project includes a test suite with 53 tests and 98% code coverage. Pure logic functions are tested directly; HTTP transport is intercepted via the [`responses`](https://github.com/getsentry/responses) library.
+
+**Run all tests:**
+```bash
+pytest
+```
+
+**Run with coverage report:**
+```bash
+pytest --cov=infobel_api_auth --cov=bizsearch_demo --cov=getdata_demo --cov-report=term-missing tests/
+```
+
+The test files mirror the source modules:
+
+-   `tests/test_infobel_api_auth.py` — Environment variable handling, token payload construction, OAuth token flow (success, HTTP errors, missing token)
+-   `tests/test_bizsearch_demo.py` — CSV splitting, search payload, address/contact formatting, search + pagination HTTP calls, `main()` control-flow branches
+-   `tests/test_getdata_demo.py` — Search payload, address/contact formatting, search HTTP calls, `main()` control-flow branches
+
 ## Useful Links
 
 -   **BizSearch API Documentation:** [https://bizsearch.infobelpro.com/Help](https://bizsearch.infobelpro.com/Help)

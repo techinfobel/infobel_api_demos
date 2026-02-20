@@ -7,6 +7,7 @@ Multi-language demonstration scripts for the Infobel BizSearch and GetData APIs.
 ```
 ├── python/          Python demos & tests
 ├── rust/            Rust demos
+├── dotnet/          .NET demos & tests
 ├── api-calls.mmd    API call-flow diagram
 └── README.md
 ```
@@ -145,6 +146,71 @@ The Rust implementation is a Cargo library + two binaries:
 -   `src/bin/getdata_demo.rs` — GetData demo binary.
 
 Dependencies: `reqwest` (blocking), `serde`/`serde_json`, `dotenvy`, `thiserror`.
+
+---
+
+## .NET
+
+### Prerequisites
+
+- .NET 9.0 SDK (or .NET 8.0+)
+- An Infobel Pro account with API access
+
+### Installation
+
+```bash
+cd infobel_api_demos/dotnet
+dotnet build
+```
+
+### Authentication
+
+Create a `.env` file in the `dotnet/` directory with your credentials:
+
+```env
+INFOBEL_USERNAME="your_username"
+INFOBEL_PASSWORD="your_password"
+```
+
+### Demos
+
+#### BizSearch Demo
+
+Searches for "Nvidia" in the US, prints the first page, then fetches pages 2-3 via `searchId`.
+
+```bash
+dotnet run --project src/BizSearchDemo
+```
+
+#### GetData Demo
+
+Queries for the top 10 US semiconductor companies (SIC code 3674).
+
+```bash
+dotnet run --project src/GetDataDemo
+```
+
+### Testing
+
+The project includes 28 xUnit tests with HTTP mocking via [`MockHttp`](https://github.com/richardszalay/mockhttp).
+
+**Run all tests:**
+```bash
+dotnet test
+```
+
+### Architecture
+
+The .NET implementation is a solution with a shared class library and two console app targets:
+
+-   `src/InfobelApiDemos/Auth/InfobelAuth.cs` — Shared auth module. `GetInfobelTokenAsync(ApiType)` performs an OAuth2 password grant.
+-   `src/InfobelApiDemos/Formatting/RecordFormatter.cs` — Shared output formatting (`FormatAddress`, `FormatContactFields`, `PrintResults`).
+-   `src/InfobelApiDemos/BizSearch/BizSearchClient.cs` — BizSearch API client (`SearchAndGetFirstPageAsync`, `GetSearchPageAsync`).
+-   `src/InfobelApiDemos/GetData/GetDataClient.cs` — GetData API client (`BuildSearchPayload`, `RunSearchAsync`).
+-   `src/BizSearchDemo/Program.cs` — BizSearch demo console app.
+-   `src/GetDataDemo/Program.cs` — GetData demo console app.
+
+Dependencies: `DotNetEnv`, `System.Text.Json` (built-in), `System.Net.Http` (built-in).
 
 ---
 

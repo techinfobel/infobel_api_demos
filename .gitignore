@@ -8,4 +8,5 @@ target/
 # .NET
 dotnet/**/bin/
 dotnet/**/obj/
+dotnet/TestResults/
 *.user

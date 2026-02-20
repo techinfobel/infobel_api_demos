@@ -1,10 +1,21 @@
 # Infobel API Demos
 
-This project provides demonstration scripts for using the Infobel BizSearch and GetData APIs.
+Multi-language demonstration scripts for the Infobel BizSearch and GetData APIs.
 
-## Getting Started
+## Project Structure
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+```
+├── python/          Python demos & tests
+├── rust/            Rust demos
+├── api-calls.mmd    API call-flow diagram
+└── README.md
+```
+
+Each language lives in its own top-level directory with its own dependency management and build tooling.
+
+---
+
+## Python
 
 ### Prerequisites
 
@@ -16,62 +27,50 @@ These instructions will get you a copy of the project up and running on your loc
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/techinfobel/infobel_api_demos.git
-    cd infobel_api_demos
+    cd infobel_api_demos/python
     ```
 
-2.  **Install dependencies:**
-    It's recommended to use a virtual environment.
+2.  **Create a virtual environment and install dependencies:**
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
-
-    Install the required packages using pip:
-    ```bash
     pip install -r requirements.txt
     ```
 
-## Authentication
+### Authentication
 
-The scripts use OAuth2 for authentication. You will need to set up a `.env` file in the root of the project to store your credentials.
+The scripts use OAuth2 for authentication. Create a `.env` file in the `python/` directory with your credentials:
 
-1.  Create a file named `.env` in the project root.
-2.  Add your Infobel username and password to the file:
-
-    ```env
-    INFOBEL_USERNAME="your_username"
-    INFOBEL_PASSWORD="your_password"
-    ```
+```env
+INFOBEL_USERNAME="your_username"
+INFOBEL_PASSWORD="your_password"
+```
 
 The authentication logic is handled by `infobel_api_auth.py`, which retrieves an access token from the Infobel token endpoint.
 
-## Demos
+### Demos
 
-The project includes two demo scripts, one for each of the BizSearch and GetData APIs.
+#### BizSearch Demo (`python/bizsearch_demo.py`)
 
-### BizSearch Demo (`bizsearch_demo.py`)
+Demonstrates how to query the BizSearch API. By default, it searches for "Nvidia" in the United States.
 
-This script demonstrates how to query the BizSearch API. By default, it searches for "Nvidia" in the United States.
-
-**Usage:**
 ```bash
 python bizsearch_demo.py
 ```
 
 The script will print the company name, address, contact information, activity, and location (latitude/longitude) with a link to OpenStreetMap for the top 5 results.
 
-### GetData Demo (`getdata_demo.py`)
+#### GetData Demo (`python/getdata_demo.py`)
 
-This script shows how to use the GetData API. It queries for the top 10 semiconductor companies in the US using the SIC code `3674`.
+Shows how to use the GetData API. It queries for the top 10 semiconductor companies in the US using the SIC code `3674`.
 
-**Usage:**
 ```bash
 python getdata_demo.py
 ```
 
 The output will include the company name, address, contact details, activity, and a link to the company's location on OpenStreetMap.
 
-## Testing
+### Testing
 
 The project includes a test suite with 53 tests and 98% code coverage. Pure logic functions are tested directly; HTTP transport is intercepted via the [`responses`](https://github.com/getsentry/responses) library.
 
@@ -91,6 +90,64 @@ The test files mirror the source modules:
 -   `tests/test_bizsearch_demo.py` — CSV splitting, search payload, address/contact formatting, search + pagination HTTP calls, `main()` control-flow branches
 -   `tests/test_getdata_demo.py` — Search payload, address/contact formatting, search HTTP calls, `main()` control-flow branches
 
+---
+
+## Rust
+
+### Prerequisites
+
+- Rust 1.70+ (with Cargo)
+- An Infobel Pro account with API access
+
+### Installation
+
+```bash
+cd infobel_api_demos/rust
+cargo build
+```
+
+### Authentication
+
+Create a `.env` file in the `rust/` directory with your credentials:
+
+```env
+INFOBEL_USERNAME="your_username"
+INFOBEL_PASSWORD="your_password"
+```
+
+### Demos
+
+#### BizSearch Demo
+
+Searches for "Nvidia" in the US, prints the first page, then fetches pages 2-3 via `searchId`.
+
+```bash
+cargo run --bin bizsearch_demo
+```
+
+#### GetData Demo
+
+Queries for the top 10 US semiconductor companies (SIC code 3674).
+
+```bash
+cargo run --bin getdata_demo
+```
+
+### Architecture
+
+The Rust implementation is a Cargo library + two binaries:
+
+-   `src/auth.rs` — Shared auth module. `get_infobel_token(ApiType)` performs an OAuth2 password grant.
+-   `src/formatting.rs` — Shared output formatting (`format_address`, `format_contact_fields`, `print_results`).
+-   `src/bizsearch.rs` — BizSearch API client (`search_and_get_first_page`, `get_search_page`).
+-   `src/getdata.rs` — GetData API client (`build_search_payload`, `run_search`).
+-   `src/bin/bizsearch_demo.rs` — BizSearch demo binary.
+-   `src/bin/getdata_demo.rs` — GetData demo binary.
+
+Dependencies: `reqwest` (blocking), `serde`/`serde_json`, `dotenvy`, `thiserror`.
+
+---
+
 ## Useful Links
 
 -   **BizSearch API Documentation:** [https://bizsearch.infobelpro.com/Help](https://bizsearch.infobelpro.com/Help)
@@ -108,6 +165,5 @@ The test files mirror the source modules:
 -   **GetData API Outputs:** [https://getdata.infobelpro.com/Help/Model/SearchResult](https://getdata.infobelpro.com/Help/Model/SearchResult)
 -   **GetData API Output records:** [https://getdata.infobelpro.com/Help/Model/Record](https://getdata.infobelpro.com/Help/Model/Record)
 -   **GetData API Paging:** [https://getdata.infobelpro.com/Help/Method/GET-api-search-searchId-records-page_languageCode_internationalPhoneFormat](https://getdata.infobelpro.com/Help/Method/GET-api-search-searchId-records-page_languageCode_internationalPhoneFormat)
-
 
 -   **Infobel Pro:** [https://www.infobelpro.com/](https://www.infobelpro.com/)

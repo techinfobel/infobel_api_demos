@@ -1,0 +1,23 @@
+[package]
+name = "infobel_api_demos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["blocking", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+dotenvy = "0.15"
+thiserror = "2"
+
+[dev-dependencies]
+mockito = "1"
+serial_test = "3"
+
+[[bin]]
+name = "bizsearch_demo"
+path = "src/bin/bizsearch_demo.rs"
+
+[[bin]]
+name = "getdata_demo"
+path = "src/bin/getdata_demo.rs"

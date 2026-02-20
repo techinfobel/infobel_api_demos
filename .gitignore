@@ -1,3 +1,11 @@
-/.env
-/__pycache__
-/venv
+.env
+__pycache__/
+venv/
+.coverage
+.pytest_cache/
+target/
+
+# .NET
+dotnet/**/bin/
+dotnet/**/obj/
+*.user
